@@ -51,69 +51,85 @@ void os_ls_processes()
     fclose(mem_file);
 }
 
-int os_exists(int process_id, char* file_name) {
+int os_exists(int process_id, char* file_name) 
+{
     FILE* mem_file = open_mem("rb");
+    unsigned char pcb_entry[PCB_ENTRY_SIZE];
+    unsigned char estado;
+    unsigned char pid; 
+
     for (int i = 0; i < PCB_ENTRIES; i++) {
-        fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
-        unsigned char state;
-        fread(&state, 1, 1, mem_file);
-        if (state != 0x01) continue;
-        fseek(mem_file, 14, SEEK_CUR); // name
-        unsigned char pid;
-        fread(&pid, 1, 1, mem_file);
+        fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);  
+        fread(pcb_entry, 1, PCB_ENTRY_SIZE, mem_file);
+
+        estado = pcb_entry[0];
+        if (estado != 0x01) continue;
+        pid = pcb_entry[15];
         if (pid != process_id) continue;
-        fseek(mem_file, 1, SEEK_CUR); // skip to file table
+        
         for (int j = 0; j < FILE_TABLE_ENTRIES; j++) {
-            unsigned char valid;
-            char fname[15] = {0};
-            fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE + 16 + j * FILE_TABLE_ENTRY_SIZE, SEEK_SET);
-            fread(&valid, 1, 1, mem_file);
-            fread(fname, 1, 14, mem_file);
+            int file_offset = FILE_TABLE_REL_START + j * FILE_TABLE_ENTRY_SIZE;
+            unsigned char valid = pcb_entry[file_offset];
+            char fname[14];
+
+            memcpy(fname, &pcb_entry[file_offset + 1], 14);
             if (valid == 0x01 && strncmp(fname, file_name, 14) == 0) {
                 fclose(mem_file);
+                printf("SI existe el archivo %s en el proceso %d \n", file_name, process_id);
                 return 1;
             }
         }
     }
     fclose(mem_file);
+    printf("NO existe el archivo %s en el proceso %d \n", file_name, process_id);
     return 0;
 }
 
-void os_ls_files(int process_id) {
+void os_ls_files(int process_id) 
+{
     FILE* mem_file = open_mem("rb");
+    unsigned char pcb_entry[PCB_ENTRY_SIZE];
+    unsigned char estado;
+    unsigned char pid;
+
     for (int i = 0; i < PCB_ENTRIES; i++) {
         fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
-        unsigned char state;
-        fread(&state, 1, 1, mem_file);
-        if (state != 0x01) continue;
-        fseek(mem_file, 14, SEEK_CUR); // name
-        unsigned char pid;
-        fread(&pid, 1, 1, mem_file);
-        if (pid != process_id) continue;
-        fseek(mem_file, 1, SEEK_CUR); // skip to file table
-        printf("Archivos del proceso %d:\n", process_id);
-        for (int j = 0; j < FILE_TABLE_ENTRIES; j++) {
-            unsigned char valid;
-            char fname[15] = {0};
-            unsigned char fsize[5];
-            unsigned char vaddr[4];
-            fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE + 16 + j * FILE_TABLE_ENTRY_SIZE, SEEK_SET);
-            fread(&valid, 1, 1, mem_file);
-            fread(fname, 1, 14, mem_file);
-            fread(fsize, 1, 5, mem_file);
-            fread(vaddr, 1, 4, mem_file);
-            if (valid == 0x01) {
-                unsigned long long size = 0;
-                for (int k = 0; k < 5; k++) size |= ((unsigned long long)fsize[k]) << (8*k);
-                unsigned int vpn = (vaddr[0] | (vaddr[1]<<8) | (vaddr[2]<<16)) >> 5;
-                unsigned int offset = ((vaddr[2] & 0x1F) << 10) | (vaddr[3] << 2);
-                printf("%03X %llu 0x", vpn, size);
-                for (int k = 3; k >= 0; k--) printf("%02X", vaddr[k]);
-                printf(" %s\n", fname);
+        fread(pcb_entry, 1, PCB_ENTRY_SIZE, mem_file);
+        
+        estado = pcb_entry[0];
+        if (estado != 0x01) continue;
+        pid = pcb_entry[15];
+
+        if (pid == process_id) {
+            printf("Archivos del proceso %d:\n", process_id);
+
+            for (int j = 0; j < FILE_TABLE_ENTRIES; j++) {
+                int file_offset = FILE_TABLE_REL_START + j * FILE_TABLE_ENTRY_SIZE;
+                unsigned char valid = pcb_entry[file_offset];
+                char fname[15];
+                memcpy(fname, &pcb_entry[file_offset + 1], 14);
+                unsigned char fsize[5];
+                memcpy(fsize, &pcb_entry[file_offset + 15], 5);
+                unsigned char vaddr[4];
+                memcpy(vaddr, &pcb_entry[file_offset + 20], 4);
+
+                if (valid == 0x01) {
+                    unsigned long long size = 0;
+                    for (int k = 0; k < 5; k++) size |= ((unsigned long long)fsize[k]) << (8*k);
+                    unsigned int vpn = (vaddr[0] | (vaddr[1]<<8) | (vaddr[2]<<16)) >> 5;
+                    unsigned int offset = ((vaddr[2] & 0x1F) << 10) | (vaddr[3] << 2);
+
+                    printf("VPN: %03X - File size: %llu - Virtual Adress 0x", vpn, size);
+                    for (int k = 3; k >= 0; k--) printf("%02X", vaddr[k]);
+                    printf(" - File name: %s\n", fname);
+                }
             }
-        }
-    }
+            fclose(mem_file);
+            return;
+        }       
+    }  
     fclose(mem_file);
+    printf("Error: Proceso con ID %d no encontrado o no está en ejecución.\n", process_id);      
 }
 
 void os_frame_bitmap() {

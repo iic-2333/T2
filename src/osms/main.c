@@ -16,8 +16,8 @@ int main(int argc, char const *argv[])
     //f = os_open(10, "log.txt", 'r');
     //os_read_file(f, "log_copia.txt");
     //os_close(f);
-    //os_ls_files(10);
-    //os_exists(10, "log.txt");
+    os_ls_files(10);
+    os_exists(10, "log.txt");
     //os_cp(10, "log.txt", 20, "reporte.txt");
     //os_frame_bitmap();
     //os_delete_file(10, "log.txt");
