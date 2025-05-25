@@ -132,19 +132,28 @@ void os_ls_files(int process_id)
     printf("Error: Proceso con ID %d no encontrado o no está en ejecución.\n", process_id);      
 }
 
-void os_frame_bitmap() {
+void os_frame_bitmap() 
+{
     FILE* mem_file = open_mem("rb");
     fseek(mem_file, FRAME_BITMAP_START, SEEK_SET);
-    int usados = 0, libres = 0;
+
+    int f_used = 0, f_free = 0;
+    unsigned char byte;
+
+    printf("Frame Bitmap: ");
     for (int i = 0; i < FRAME_BITMAP_SIZE; i++) {
-        unsigned char byte;
         fread(&byte, 1, 1, mem_file);
         for (int b = 0; b < 8; b++) {
-            if (byte & (1 << b)) usados++;
-            else libres++;
+            if (byte & (1 << b)) {
+                printf("1");
+                f_used++;
+            } else {
+                printf("0");
+                f_free++;
+            }
         }
     }
-    printf("USADOS %d\nLIBRES %d\n", usados, libres);
+    printf("\nUSADOS %d\nLIBRES %d\n", f_used, f_free);
     fclose(mem_file);
 }
 
