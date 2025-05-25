@@ -6,10 +6,10 @@ int main(int argc, char const *argv[])
         fprintf(stderr, "Uso: %s <ruta_a_memoria>\n", argv[0]);
         return 1;
     }
-    os_mount(argv[1]);
-    //os_start_process(10, "ventas");
-    //os_start_process(20, "reportes");
-    //os_ls_processes();
+    os_mount((char *)argv[1]);
+    os_start_process(10, "ventas");
+    os_start_process(20, "reportes");
+    os_ls_processes();
     //osrmsFile* f = os_open(10, "log.txt", 'w');
     //os_write_file(f, "log_local.txt");
     //os_close(f);
