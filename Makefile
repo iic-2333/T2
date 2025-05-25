@@ -48,7 +48,7 @@ LIB=$(MTH)
 COMMON=osms_API osms_File
 
 # Directorios que serán compilados a un programa
-PROGRAMS=osms
+PROGRAMS=osms osms_memfilled
 
 # Todos los directorios que contienen archivos de código
 SRCDIR=$(COMMON) $(PROGRAMS)

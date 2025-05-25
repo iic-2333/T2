@@ -9,7 +9,7 @@
 #define FILE_TABLE_REL_START 16
 #define FILE_TABLE_SIZE 240
 #define FILE_TABLE_ENTRIES 10
-#define FILE_TABLE_ENTRY_SIZE 24 
+#define FILE_TABLE_ENTRY_SIZE 24
 #define INVERTED_PT_START 8192
 #define INVERTED_PT_SIZE (192*1024)
 #define INVERTED_PT_ENTRIES 65536
@@ -26,6 +26,9 @@
 #define PAGE_SIZE 32768
 #define PAGE_COUNT (VIRTUAL_MEM_SIZE/PAGE_SIZE)
 
+// función auxiliar para abrir la memoria
+FILE* open_mem(const char* mode);
+
 // funciones generales
 void os_mount(char* memory_path);
 void os_ls_processes();
@@ -37,4 +40,3 @@ void os_frame_bitmap();
 int os_start_process(int process_id, char* process_name);
 int os_finish_process(int process_id);
 int os_rename_process(int process_id, char* new_name);
-

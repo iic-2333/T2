@@ -1,0 +1,54 @@
+# Object files
+*.o
+obj/
+*.obj
+*.ko
+*.elf
+
+# Executables
+*.exe
+*.out
+osms
+osms_memfilled
+!osms_memfilled/
+
+# Libraries
+*.a
+*.la
+*.lo
+*.lib
+*.so
+*.so.*
+*.dylib
+
+# Debug files
+*.dSYM/
+*.su
+
+# Temporary files
+*.tmp
+temp_transfer_*
+log_copia.txt
+
+# macOS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor-specific files
+*~
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build output directories
+bin/
+build/
+
+# Other binary files
+*.bin
+# Exception for test memory files
+!mems/memfilled.bin
+!mems/memformat.bin
