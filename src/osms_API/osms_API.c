@@ -202,8 +202,8 @@ int os_start_process(int process_id, char* process_name)
             fwrite(name, 1, 14, mem_file);
             fwrite(&process_id, 1, 1, mem_file);
 
-            unsigned char cero[FILE_TABLE_SIZE] = {0};
-            fwrite(cero, 1, FILE_TABLE_SIZE, mem_file);
+            unsigned char zeros[FILE_TABLE_SIZE] = {0};
+            fwrite(zeros, 1, FILE_TABLE_SIZE, mem_file);
             fclose(mem_file);
             printf("Proceso %s con ID %d ha sido iniciado.\n", process_name, process_id);
             return 0;
@@ -214,55 +214,76 @@ int os_start_process(int process_id, char* process_name)
     return -1;
 }
 
-int os_finish_process(int process_id) {
+int os_finish_process(int process_id)
+{
     FILE* mem_file = open_mem("r+b");
+    unsigned char state;
+    unsigned char pid;
+
     for (int i = 0; i < PCB_ENTRIES; i++) {
         fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
-        unsigned char state;
         fread(&state, 1, 1, mem_file);
+
         if (state == 0x01) {
             fseek(mem_file, 14, SEEK_CUR);
-            unsigned char pid;
             fread(&pid, 1, 1, mem_file);
+
             if (pid == process_id) {
-                // Liberar memoria: invalidar archivos y limpiar entrada
                 fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
                 state = 0x00;
                 fwrite(&state, 1, 1, mem_file);
-                char cero[PCB_ENTRY_SIZE-1] = {0};
-                fwrite(cero, 1, PCB_ENTRY_SIZE-1, mem_file);
+                char zeros[PCB_ENTRY_SIZE-1] = {0};
+                fwrite(zeros, 1, PCB_ENTRY_SIZE-1, mem_file);
                 fclose(mem_file);
+                printf("Proceso con ID %d ha sido finalizado.\n", process_id);
                 return 0;
             }
         }
     }
     fclose(mem_file);
+    printf("Error: No se pudo finalizar este proceso.\n");
     return -1;
 }
 
-int os_rename_process(int process_id, char* new_name) {
-    if (strlen(new_name) > 14) return -1;
+int os_rename_process(int process_id, char* new_name)
+{
+    if (strlen(new_name) > 14) {
+        printf("Error: El nuevo nombre del proceso no puede superar los 14 caracteres.\n");
+        return -1;
+    }
+
     FILE* mem_file = open_mem("r+b");
+    unsigned char state;
+    unsigned char pid;
+
     for (int i = 0; i < PCB_ENTRIES; i++) {
         fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
-        unsigned char state;
         fread(&state, 1, 1, mem_file);
+
         if (state == 0x01) {
-            char name[14];
-            fread(name, 1, 14, mem_file);
-            unsigned char pid;
+            fseek(mem_file, 14, SEEK_CUR);
             fread(&pid, 1, 1, mem_file);
+
             if (pid == process_id) {
-                // Cambiar name
                 fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE + 1, SEEK_SET);
-                char name_nuevo[14] = {0};
-                strncpy(name_nuevo, new_name, 14);
-                fwrite(name_nuevo, 1, 14, mem_file);
+                char name[14];
+                strncpy(name, new_name, 14);
+                fwrite(name, 1, 14, mem_file);
                 fclose(mem_file);
+                printf("El nombre del proceso con ID %d ahora es %s.\n", process_id, new_name);
                 return 0;
             }
         }
     }
     fclose(mem_file);
+    printf("Error: Proceso con ID %d no encontrado o no está en ejecución.\n", process_id);
     return -1;
+}
+
+void free_all()
+{
+    if (memory_path != NULL) {
+        free(memory_path);
+        memory_path = NULL;
+    }
 }

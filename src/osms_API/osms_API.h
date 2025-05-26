@@ -40,3 +40,5 @@ void os_frame_bitmap();
 int os_start_process(int process_id, char* process_name);
 int os_finish_process(int process_id);
 int os_rename_process(int process_id, char* new_name);
+
+void free_all();
