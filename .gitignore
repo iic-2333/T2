@@ -8,9 +8,10 @@ obj/
 # Executables
 *.exe
 *.out
-osms
-osms_memfilled
-!osms_memfilled/
+osms_general
+osms_files
+!osms/
+document_leido.txt
 
 # Libraries
 *.a
@@ -49,6 +50,7 @@ build/
 
 # Other binary files
 *.bin
-# Exception for test memory files
-!mems/memfilled.bin
-!mems/memformat.bin
+# Memory files
+mems/
+
+*/.DS_Store

@@ -119,7 +119,7 @@ void os_ls_files(int process_id)
                     unsigned int vpn = (vaddr[0] | (vaddr[1]<<8) | (vaddr[2]<<16)) >> 5;
                     unsigned int offset = ((vaddr[2] & 0x1F) << 10) | (vaddr[3] << 2);
 
-                    printf("VPN: %03X - File size: %llu - Virtual Adress 0x", vpn, size);
+                    printf("VPN: %03X - Offset: 0x%04X - File size: %llu - Virtual Adress 0x", vpn, offset, size);
                     for (int k = 3; k >= 0; k--) printf("%02X", vaddr[k]);
                     printf(" - File name: %s\n", fname);
                 }
