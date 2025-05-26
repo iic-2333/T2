@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdio.h>
-// Aquí puedes agregar utilidades y tipos auxiliares para manejo de archivos y memoria 
+// Aquí puedes agregar utilidades y tipos auxiliares para manejo de archivos y memoria
 
 // Estructura para archivos abiertos
 typedef struct osrmsFile {
@@ -21,4 +21,4 @@ int os_write_file(osrmsFile* file_desc, char* src);
 void os_delete_file(int process_id, char* file_name);
 void os_close(osrmsFile* file_desc);
 // BONUS
-int os_cp(int pid_src, char* fname_src, int pid_dst, char* fname_dst); 
+int os_cp(int pid_src, char* fname_src, int pid_dst, char* fname_dst);

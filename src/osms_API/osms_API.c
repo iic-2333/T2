@@ -18,8 +18,8 @@ void os_mount(char* mem_path) {
     printf("Memoria montada correctamente: %s\n", memory_path);
 }
 
-FILE* open_mem(const char* mode) 
-{    
+FILE* open_mem(const char* mode)
+{
     FILE* mem_file = fopen(memory_path, mode);
     if (mem_file == NULL) {
         perror("Error al abrir archivo de memoria");
@@ -28,7 +28,7 @@ FILE* open_mem(const char* mode)
     return mem_file;
 }
 
-void os_ls_processes() 
+void os_ls_processes()
 {
     FILE* mem_file = open_mem("rb");
     fseek(mem_file, PCB_START, SEEK_SET);
@@ -51,22 +51,22 @@ void os_ls_processes()
     fclose(mem_file);
 }
 
-int os_exists(int process_id, char* file_name) 
+int os_exists(int process_id, char* file_name)
 {
     FILE* mem_file = open_mem("rb");
     unsigned char pcb_entry[PCB_ENTRY_SIZE];
     unsigned char estado;
-    unsigned char pid; 
+    unsigned char pid;
 
     for (int i = 0; i < PCB_ENTRIES; i++) {
-        fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);  
+        fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
         fread(pcb_entry, 1, PCB_ENTRY_SIZE, mem_file);
 
         estado = pcb_entry[0];
         if (estado != 0x01) continue;
         pid = pcb_entry[15];
         if (pid != process_id) continue;
-        
+
         for (int j = 0; j < FILE_TABLE_ENTRIES; j++) {
             int file_offset = FILE_TABLE_REL_START + j * FILE_TABLE_ENTRY_SIZE;
             unsigned char valid = pcb_entry[file_offset];
@@ -85,7 +85,7 @@ int os_exists(int process_id, char* file_name)
     return 0;
 }
 
-void os_ls_files(int process_id) 
+void os_ls_files(int process_id)
 {
     FILE* mem_file = open_mem("rb");
     unsigned char pcb_entry[PCB_ENTRY_SIZE];
@@ -95,7 +95,7 @@ void os_ls_files(int process_id)
     for (int i = 0; i < PCB_ENTRIES; i++) {
         fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
         fread(pcb_entry, 1, PCB_ENTRY_SIZE, mem_file);
-        
+
         estado = pcb_entry[0];
         if (estado != 0x01) continue;
         pid = pcb_entry[15];
@@ -126,13 +126,13 @@ void os_ls_files(int process_id)
             }
             fclose(mem_file);
             return;
-        }       
-    }  
+        }
+    }
     fclose(mem_file);
-    printf("Error: Proceso con ID %d no encontrado o no está en ejecución.\n", process_id);      
+    printf("Error: Proceso con ID %d no encontrado o no está en ejecución.\n", process_id);
 }
 
-void os_frame_bitmap() 
+void os_frame_bitmap()
 {
     FILE* mem_file = open_mem("rb");
     fseek(mem_file, FRAME_BITMAP_START, SEEK_SET);
@@ -157,7 +157,7 @@ void os_frame_bitmap()
     fclose(mem_file);
 }
 
-int os_start_process(int process_id, char* process_name) 
+int os_start_process(int process_id, char* process_name)
 {
     if (strlen(process_name) > 14) {
         printf("Error: El nombre del proceso no puede superar los 14 caracteres.\n");
@@ -193,7 +193,7 @@ int os_start_process(int process_id, char* process_name)
         fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
         fread(&state, 1, 1, mem_file);
 
-        if (state == 0x00) {            
+        if (state == 0x00) {
             fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
             state = 0x01;
             fwrite(&state, 1, 1, mem_file);
@@ -201,7 +201,7 @@ int os_start_process(int process_id, char* process_name)
             strncpy(name, process_name, 14);
             fwrite(name, 1, 14, mem_file);
             fwrite(&process_id, 1, 1, mem_file);
-            
+
             unsigned char zeros[FILE_TABLE_SIZE] = {0};
             fwrite(zeros, 1, FILE_TABLE_SIZE, mem_file);
             fclose(mem_file);
@@ -225,9 +225,9 @@ int os_finish_process(int process_id)
         fread(&state, 1, 1, mem_file);
 
         if (state == 0x01) {
-            fseek(mem_file, 14, SEEK_CUR);            
+            fseek(mem_file, 14, SEEK_CUR);
             fread(&pid, 1, 1, mem_file);
-            
+
             if (pid == process_id) {
                 fseek(mem_file, PCB_START + i * PCB_ENTRY_SIZE, SEEK_SET);
                 state = 0x00;
@@ -245,7 +245,7 @@ int os_finish_process(int process_id)
     return -1;
 }
 
-int os_rename_process(int process_id, char* new_name) 
+int os_rename_process(int process_id, char* new_name)
 {
     if (strlen(new_name) > 14) {
         printf("Error: El nuevo nombre del proceso no puede superar los 14 caracteres.\n");
@@ -261,7 +261,7 @@ int os_rename_process(int process_id, char* new_name)
         fread(&state, 1, 1, mem_file);
 
         if (state == 0x01) {
-            fseek(mem_file, 14, SEEK_CUR); 
+            fseek(mem_file, 14, SEEK_CUR);
             fread(&pid, 1, 1, mem_file);
 
             if (pid == process_id) {

@@ -48,10 +48,10 @@ LIB=$(MTH)
 COMMON=osms_API osms_File
 
 # Directorios que serán compilados a un programa
-PROGRAMS=osms
+PROGRAMS=osms_general osms_files
 
 # Todos los directorios que contienen archivos de código
-SRCDIR=$(COMMON) $(PROGRAMS)
+SRCDIR=$(COMMON) osms
 
 ###############################################################################
 # DEPENDENCIAS Y DIRECTORIOS                                                  #
@@ -86,6 +86,13 @@ OBJDIR := $(patsubst $(SRC)/%, $(OBJ)/%, $(shell find $(SRC) -type d))
 # Pero solo una vez que se hayan llamado las reglas $(OBJDIR) y $(PROGRAMS)
 all: $(OBJDIR) $(PROGRAMS)
 	@echo "done compiling"
+
+# Reglas para los programas de prueba específicos
+osms_general: $(OBJ)/osms_API/osms_API.o $(OBJ)/osms_File/osms_File.o $(OBJ)/osms/general/main.o
+	@$(CC) $(CFLAGS) $^ -o $@ $(LIB) && echo "compiled '$@'"
+
+osms_files: $(OBJ)/osms_API/osms_API.o $(OBJ)/osms_File/osms_File.o $(OBJ)/osms/files/main.o
+	@$(CC) $(CFLAGS) $^ -o $@ $(LIB) && echo "compiled '$@'"
 
 # Esta regla elimina todo registro de compilación que se haya hecho
 clean:
